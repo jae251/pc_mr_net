@@ -19,6 +19,8 @@ class BoundingBox:
 
     @classmethod
     def from_kitti_string(cls, id, kitti_string, tf_matrix=None):
+        # parse one line in KITTI label file
+        # tf_matrix should be given, since kitti objects are given in camera coordinate system, not in lidar cs
         items = kitti_string.split()
         items = [items[0]] + [float(v) for v in items[1:]]
         label, truncated, occluded, alpha, x1, y1, x2, y2, xd, yd, zd, x, y, z, roty = items
@@ -63,6 +65,9 @@ class BoundingBox:
 
         return corner_points
 
+    ####################################################################################################################
+    # methods for visualization #
+    #############################
     def draw_to_plot_2d(self, plot):
         corner_points_2d = self.get_corner_points_2d()
         polygon = np.vstack((corner_points_2d, corner_points_2d[0]))

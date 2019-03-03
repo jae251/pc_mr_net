@@ -41,6 +41,13 @@ class BoundingBox:
         # with bounding box position as origin and the same orientation
         return rotate_pcl(pcl - self.pos, self.angle)
 
+    def compute_regression_labels(self, pcl):
+        # return relative coordinates of points for points inside bounding box, else 0
+        regression_labels = self.tf_into_bbox_cs(pcl)
+        mask = (regression_labels > self.size) + (regression_labels < -self.size)
+        regression_labels[np.any(mask, axis=1)] = 0
+        return regression_labels
+
     def get_polygon_2d(self):
         from shapely.geometry import Polygon
         polygon = Polygon(self.get_corner_points_2d())

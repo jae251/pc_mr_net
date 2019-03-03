@@ -1,4 +1,5 @@
 import numpy as np
+from utilities.pcl_utils import rotate_pcl
 
 
 class BoundingBox:
@@ -32,6 +33,11 @@ class BoundingBox:
         linear_combination = np.linalg.solve(self.support_vector_matrix, pcl.transpose())
         inside_box = np.all(linear_combination <= 1, axis=0)
         return inside_box
+
+    def tf_into_bbox_cs(self, pcl):
+        # transform a point cloud into bounding box coordinate system
+        # with bounding box position as origin and the same orientation
+        return rotate_pcl(pcl - self.pos, self.angle)
 
     def get_polygon_2d(self):
         from shapely.geometry import Polygon

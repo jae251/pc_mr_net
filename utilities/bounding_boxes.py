@@ -92,6 +92,9 @@ class BoundingBox:
 
         return corner_points
 
+    def copy(self):
+        return BoundingBox(self.id, self.label, *self.pos, *self.size, self.angle)
+
     ####################################################################################################################
     # methods for visualization #
     #############################

@@ -31,6 +31,26 @@ class BoundingBox:
         roty *= -1
         return cls(id, label, x, y, z, yd, zd, xd, roty)
 
+    @classmethod
+    def from_numpy(cls, numpy_entry):
+        id = numpy_entry["id"]
+        label = numpy_entry["label"]
+        x, y, z = numpy_entry["position"]
+        l, b, h = numpy_entry["size"]
+        angle = numpy_entry["angle"]
+        return cls(id, label, x, y, z, l, b, h, angle)
+
+    def to_numpy(self):
+        return np.array((self.id,
+                         self.label,
+                         self.pos,
+                         self.size,
+                         self.angle), dtype=np.dtype([("id", np.uint16),
+                                                      ("label", (np.string_, 16)),
+                                                      ("position", (np.float64, 3)),
+                                                      ("size", (np.float64, 3)),
+                                                      ("angle", np.float64)]))
+
     def check_points_inside(self, pcl):
         linear_combination = np.linalg.solve(self.support_vector_matrix, pcl.transpose())
         inside_box = np.all(linear_combination <= 1, axis=0)

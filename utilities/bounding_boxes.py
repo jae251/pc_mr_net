@@ -1,4 +1,5 @@
 import numpy as np
+from utilities.pcl_utils import rotate_pcl
 
 
 class BoundingBox:
@@ -18,6 +19,8 @@ class BoundingBox:
 
     @classmethod
     def from_kitti_string(cls, id, kitti_string, tf_matrix=None):
+        # parse one line in KITTI label file
+        # tf_matrix should be given, since kitti objects are given in camera coordinate system, not in lidar cs
         items = kitti_string.split()
         items = [items[0]] + [float(v) for v in items[1:]]
         label, truncated, occluded, alpha, x1, y1, x2, y2, xd, yd, zd, x, y, z, roty = items
@@ -28,10 +31,42 @@ class BoundingBox:
         roty *= -1
         return cls(id, label, x, y, z, yd, zd, xd, roty)
 
+    @classmethod
+    def from_numpy(cls, numpy_entry):
+        id = numpy_entry["id"]
+        label = numpy_entry["label"]
+        x, y, z = numpy_entry["position"]
+        l, b, h = numpy_entry["size"]
+        angle = numpy_entry["angle"]
+        return cls(id, label, x, y, z, l, b, h, angle)
+
+    def to_numpy(self):
+        return np.array((self.id,
+                         self.label,
+                         self.pos,
+                         self.size,
+                         self.angle), dtype=np.dtype([("id", np.uint16),
+                                                      ("label", (np.string_, 16)),
+                                                      ("position", (np.float64, 3)),
+                                                      ("size", (np.float64, 3)),
+                                                      ("angle", np.float64)]))
+
     def check_points_inside(self, pcl):
         linear_combination = np.linalg.solve(self.support_vector_matrix, pcl.transpose())
         inside_box = np.all(linear_combination <= 1, axis=0)
         return inside_box
+
+    def tf_into_bbox_cs(self, pcl):
+        # transform a point cloud into bounding box coordinate system
+        # with bounding box position as origin and the same orientation
+        return rotate_pcl(pcl - self.pos, self.angle)
+
+    def compute_regression_labels(self, pcl):
+        # return relative coordinates of points for points inside bounding box, else 0
+        regression_labels = self.tf_into_bbox_cs(pcl)
+        mask = (regression_labels > self.size) + (regression_labels < -self.size)
+        regression_labels[np.any(mask, axis=1)] = 0
+        return regression_labels
 
     def get_polygon_2d(self):
         from shapely.geometry import Polygon
@@ -57,6 +92,12 @@ class BoundingBox:
 
         return corner_points
 
+    def copy(self):
+        return BoundingBox(self.id, self.label, *self.pos, *self.size, self.angle)
+
+    ####################################################################################################################
+    # methods for visualization #
+    #############################
     def draw_to_plot_2d(self, plot):
         corner_points_2d = self.get_corner_points_2d()
         polygon = np.vstack((corner_points_2d, corner_points_2d[0]))

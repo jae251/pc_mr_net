@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.spatial import distance
+from scipy.spatial.distance import pdist, squareform
 
 
 def rotate_pcl(pcl, angle):
@@ -20,7 +20,7 @@ def find_nearest_points(pcl, n):
     :return: array of nearest points, shape=(len(pcl),n,3),
              array of distances, shape=(len(pcl),n)
     '''
-    distance_matrix = distance.squareform(distance.pdist(pcl))
+    distance_matrix = squareform(pdist(pcl))
     sorted_indices_by_distance = np.argsort(distance_matrix, axis=1)
     nearest_neighbour_indices = sorted_indices_by_distance[:, 1:n + 1]  # first entry is self distance
     row_indices = np.repeat(sorted_indices_by_distance[:, 0][:, np.newaxis], n, axis=1)
@@ -30,3 +30,17 @@ def find_nearest_points(pcl, n):
     distances = distance_matrix[row_indices, nearest_neighbour_indices]
     # print(distances.shape)
     return nearest_points, distances
+
+
+def find_points_inside_distance(pcl, d):
+    '''
+    for each point in pcl find all other points inside distance d
+    '''
+    distance_matrix = squareform(pdist(pcl))
+    cutoff_index = np.sum(distance_matrix <= d, axis=1)
+    sorted_indices = np.argsort(distance_matrix, axis=1)
+    points_inside_distance = []
+    for i, indices in enumerate(sorted_indices):
+        points = pcl[sorted_indices[i, 1:cutoff_index[i]]]
+        points_inside_distance.append(points)
+    return points_inside_distance

@@ -65,8 +65,13 @@ class HdfLoader:
         middle point.
         '''
         pcl_label = pcl.copy()
+        changed = np.zeros(len(pcl_label))
         for bb in bbx:
             bb = BoundingBox.from_numpy(bb)
             mask = bb.check_points_inside(pcl)
             pcl_label[mask] -= bb.pos
+            changed += mask
+        nr_of_points_changed_multiple_times = np.sum(changed > 1)
+        if nr_of_points_changed_multiple_times > 0:
+            print("{} points were found in more than one bounding box.".format(nr_of_points_changed_multiple_times))
         return torch.from_numpy(pcl_label)

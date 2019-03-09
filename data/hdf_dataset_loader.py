@@ -37,27 +37,30 @@ class HdfLoader:
     def __len__(self):
         return len(self.data_files)
 
+    # def compute_feature_vector(self, pcl):
+    #     ''' Every point gets assigned a set of features for each entry in self.feature_distances.
+    #     The sphere around each point defined by each feature distance gets subdivided into 8 compartments
+    #     and can be thought of as a directional property.
+    #     The points inside the regions are counted. For each point, each feature distance and each direction the point
+    #     count is entered into the feature vector.
+    #     This set of features can be thought of as approximated directional point density.
+    #     '''
+    #     local_pcl = pcl[np.newaxis] - pcl[:, np.newaxis]
+    #     distance_matrix = np.linalg.norm(local_pcl, axis=2)
+    #     feature_vector = np.zeros((len(pcl), 8 * len(self.feature_distances)))
+    #     not_zero_mask = distance_matrix != 0
+    #     for i, dist in enumerate(self.feature_distances):
+    #         dist_mask = (distance_matrix <= dist) * not_zero_mask
+    #         for n, (k1, k2, k3) in enumerate(product((1, -1), repeat=3)):  # iterate over the 8 space segments
+    #             located_in_segment = (local_pcl[:, :, 0] * k1 >= 0) * \
+    #                                  (local_pcl[:, :, 1] * k2 >= 0) * \
+    #                                  (local_pcl[:, :, 2] * k3 >= 0)
+    #             point_count_in_segment = np.sum(located_in_segment * dist_mask, axis=1)
+    #             feature_vector[:, i * 8 + n] = point_count_in_segment
+    #     return torch.from_numpy(feature_vector)
+
     def compute_feature_vector(self, pcl):
-        ''' Every point gets assigned a set of features for each entry in self.feature_distances.
-        The sphere around each point defined by each feature distance gets subdivided into 8 compartments
-        and can be thought of as a directional property.
-        The points inside the regions are counted. For each point, each feature distance and each direction the point
-        count is entered into the feature vector.
-        This set of features can be thought of as approximated directional point density.
-        '''
-        local_pcl = pcl[np.newaxis] - pcl[:, np.newaxis]
-        distance_matrix = np.linalg.norm(local_pcl, axis=2)
-        feature_vector = np.zeros((len(pcl), 8 * len(self.feature_distances)))
-        not_zero_mask = distance_matrix != 0
-        for i, dist in enumerate(self.feature_distances):
-            dist_mask = (distance_matrix <= dist) * not_zero_mask
-            for n, (k1, k2, k3) in enumerate(product((1, -1), repeat=3)):  # iterate over the 8 space segments
-                located_in_segment = (local_pcl[:, :, 0] * k1 >= 0) * \
-                                     (local_pcl[:, :, 1] * k2 >= 0) * \
-                                     (local_pcl[:, :, 2] * k3 >= 0)
-                point_count_in_segment = np.sum(located_in_segment * dist_mask, axis=1)
-                feature_vector[:, i * 8 + n] = point_count_in_segment
-        return torch.from_numpy(feature_vector)
+        feature_vector = torch.from_numpy(pcl)
 
     def compute_label_vector(self, pcl, bbx):
         # WARNING: this fails for overlapping bounding boxes - subtraction is applied multiple times in these cases

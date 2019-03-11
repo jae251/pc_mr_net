@@ -2,7 +2,7 @@ from time import time
 
 import torch
 import torch.nn as nn
-from torch.nn.functional import relu, log_softmax
+from torch.nn.functional import relu
 from torch.optim import Adam
 
 from data.hdf_dataset_loader import HdfLoader

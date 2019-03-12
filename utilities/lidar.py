@@ -17,5 +17,5 @@ class Lidar(Lidar):
         el = np.linspace(elevation_min, elevation_max, n2)
         rays_spherical = np.dstack((np.ones(n1 * n2), *[m.ravel() for m in np.meshgrid(az, el)]))[0]
         ray_directions = self._tf_into_cartesian_coordinates(rays_spherical)
-        self.sampling_dimensions = (len(el), len(az))
+        self.sampling_dimensions = (len(az), len(el))
         return self.position, ray_directions

@@ -1,49 +1,45 @@
+import numpy as np
 import torch
 import torch.nn as nn
-
-
-# m = torch.randn(1, 3, 100, 50)
-# print(m)
-#
-# m_padded = torch.nn.ZeroPad2d(1)(m)
-# print(m_padded.shape)
-# print(m.shape)
-# m0 = m_padded[:, :, :-2, 0:-2] - m
-# m1 = m_padded[:, :, :-2, 1:-1] - m
-# m2 = m_padded[:, :, :-2, 2:] - m
-# m3 = m_padded[:, :, 1:-1, 0:-2] - m
-# m4 = m_padded[:, :, 1:-1, 2:] - m
-# m5 = m_padded[:, :, 2:, 0:-2] - m
-# m6 = m_padded[:, :, 2:, 1:-1] - m
-# m7 = m_padded[:, :, 2:, 2:] - m
-#
-# print(torch.cat([m0, m1, m2, m3, m4, m5, m6, m7], 1).shape)
 
 
 class PointConvolution(nn.Module):
     '''
     Graph convolution over points with relative position as features
-    and adjacency information from sensor picture format and 3x3 kernel.
+    and adjacency information from sensor picture format and quadratic kernel.
     In other words:
-    2d Convolution with kernel size 3x3, where the middle value is subtracted
+    2d Convolution with quadratic kernel, where the middle value is subtracted
     from the outer values and is otherwise ignored.
     '''
 
-    def __init__(self, output_features):
+    def __init__(self, kernel_size, output_features):
         super().__init__()
+        self.kernel_size = kernel_size
         self.output_features = output_features
+        self._padding_size = (kernel_size - 1) * .5
+        self.pad = nn.ZeroPad2d(self._padding_size)
+        self.kernel_coordinates = self.compute_kernel_coordintes()
         self.conv_1x1 = nn.Conv2d(24, output_features, kernel_size=1)
 
     def forward(self, x):
-        x_padded = nn.ZeroPad2d(1)(x)
-        x0 = x_padded[:, :, :-2, :-2] - x
-        x1 = x_padded[:, :, :-2, 1:-1] - x
-        x2 = x_padded[:, :, :-2, 2:] - x
-        x3 = x_padded[:, :, 1:-1, :-2] - x
-        x4 = x_padded[:, :, 1:-1, 2:] - x
-        x5 = x_padded[:, :, 2:, :-2] - x
-        x6 = x_padded[:, :, 2:, 1:-1] - x
-        x7 = x_padded[:, :, 2:, 2:] - x
-        x = torch.cat([x0, x1, x2, x3, x4, x5, x6, x7], 1)
+        shape_0, shape_1 = x.shape
+        x_padded = self.pad(x)
+        channels = []
+        for i in range(self.kernel_size):
+            for j in range(self.kernel_size):
+                if i == self._middle_coordinate and j == self._middle_coordinate:
+                    continue
+        for i, j in self.kernel_coordinates:
+            channel = x_padded[:, :, i:shape_0 + i, j:shape_1 + j] - x
+            channels.append(channel)
+        x = torch.cat(channels, 1)
         x = self.conv_1x1(x)
         return x
+
+    def _compute_kernel_coordinates(self):
+        i, j = np.meshgrid(np.arange(self.kernel_size), np.arange(self.kernel_size))
+        i = i.reshape(-1)
+        j = j.reshape(-1)
+        coordinates = np.dstack((i, j))[0]
+        coordinates = coordinates[np.all(coordinates != 0, axis=1)]
+        return coordinates

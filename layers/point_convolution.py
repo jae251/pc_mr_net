@@ -16,19 +16,15 @@ class PointConvolution(nn.Module):
         super().__init__()
         self.kernel_size = kernel_size
         self.output_features = output_features
-        self._padding_size = (kernel_size - 1) * .5
+        self._padding_size = int((kernel_size - 1) * .5)
         self.pad = nn.ZeroPad2d(self._padding_size)
-        self.kernel_coordinates = self.compute_kernel_coordintes()
-        self.conv_1x1 = nn.Conv2d(24, output_features, kernel_size=1)
+        self.kernel_coordinates = self._compute_kernel_coordinates()
+        self.conv_1x1 = nn.Conv2d(3 * len(self.kernel_coordinates), output_features, kernel_size=1)
 
     def forward(self, x):
-        shape_0, shape_1 = x.shape
+        _, _, shape_0, shape_1 = x.shape
         x_padded = self.pad(x)
         channels = []
-        for i in range(self.kernel_size):
-            for j in range(self.kernel_size):
-                if i == self._middle_coordinate and j == self._middle_coordinate:
-                    continue
         for i, j in self.kernel_coordinates:
             channel = x_padded[:, :, i:shape_0 + i, j:shape_1 + j] - x
             channels.append(channel)
@@ -41,5 +37,5 @@ class PointConvolution(nn.Module):
         i = i.reshape(-1)
         j = j.reshape(-1)
         coordinates = np.dstack((i, j))[0]
-        coordinates = coordinates[np.all(coordinates != 0, axis=1)]
+        coordinates = coordinates[np.any(coordinates != self._padding_size, axis=1)]
         return coordinates

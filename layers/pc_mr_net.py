@@ -6,19 +6,23 @@ from torch.nn.functional import relu
 from torch.optim import Adam
 
 from data.hdf_dataset_loader import HdfLoader
+from layers.convolution_module import FirstLayer, ConvolutionModule
 
 
 class PointCloudMapRegressionNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 20, 3)
-        self.conv2 = nn.Conv2d(20, 20, 3)
-        self.conv3 = nn.Conv2d(20, 2, 1)
+        self.conv1 = FirstLayer()
+        self.conv2 = ConvolutionModule(40, 20)
+        self.conv2 = ConvolutionModule(40, 20)
+        self.conv3 = ConvolutionModule(40, 20)
+        self.conv4 = nn.Conv2d(40, 3, 1)
 
     def forward(self, x):
         x = relu(self.conv1(x))
         x = relu(self.conv2(x))
         x = relu(self.conv3(x))
+        x = self.conv4(x)
         return x
 
 

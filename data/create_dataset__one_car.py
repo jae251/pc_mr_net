@@ -41,7 +41,7 @@ for scene_nr in range(nr_of_scenes):
                   position=(0, -10, h))
     pcl = lidar.sample_3d_model_gpu(vertices, polygons)
     width, height = lidar.sampling_dimensions
-    pcl = pcl.reshape(width, height, 3)
+    pcl = pcl.reshape(height, width, 3)
     bounding_boxes = adapt_z_position(scene.get_bounding_boxes())
 
     with File(filename, "w") as f:

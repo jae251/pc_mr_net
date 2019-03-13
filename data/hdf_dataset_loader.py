@@ -1,7 +1,7 @@
 import numpy as np
 from h5py import File
 import os
-from itertools import product
+# from itertools import product
 import torch
 
 from utilities.bounding_boxes import BoundingBox
@@ -61,6 +61,7 @@ class HdfLoader:
 
     def compute_feature_vector(self, pcl):
         feature_vector = torch.from_numpy(pcl)
+        return feature_vector
 
     def compute_label_vector(self, pcl, bbx):
         # WARNING: this fails for overlapping bounding boxes - subtraction is applied multiple times in these cases

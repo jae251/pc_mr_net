@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.nn.functional import relu
 from torch.optim import Adam
 
-from data.hdf_dataset_loader import HdfLoader
+from data.hdf_dataset_loader import HdfDataset
 from layers.convolution_module import FirstLayer, ConvolutionModule
 
 
@@ -26,7 +26,29 @@ class PointCloudMapRegressionNet(nn.Module):
         return x
 
 
+def custom_collate_fn(sample):
+    ''' This function is only necessary for a batch size greater than 1.
+    Since the data samples are of varying sizes and the pytorch data loader class cannot handle this,
+    the samples need to be padded to the same size. This enables the use of the inbuilt parallel data loading.
+    '''
+    shapes = torch.Tensor([s[0].shape for s in sample])
+    max_shapes = shapes[:, [2, 3]].max(0)[0]
+    input, label = [], []
+    for s in sample:
+        shape = s[0].shape
+        height_padding = int(max_shapes[0] - shape[2])
+        width_padding = int(max_shapes[1] - shape[3])
+        pad = nn.ZeroPad2d((0, width_padding, 0, height_padding))
+        input.append(pad(s[0]))
+        label.append(pad(s[1]))
+    input = torch.cat(input, 0)
+    label = torch.cat(label, 0)
+    return input, label
+
+
 EPOCHS = 20
+BATCHSIZE = 10
+NUM_WORKERS = 3
 if __name__ == '__main__':
     t1 = time()
     net = PointCloudMapRegressionNet()
@@ -34,8 +56,13 @@ if __name__ == '__main__':
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()
 
-    train_loader = HdfLoader("../data/dataset_one_car/train", shuffle=True)
-    eval_loader = HdfLoader("../data/dataset_one_car/eval", shuffle=False)
+    train_dataset = HdfDataset("../data/dataset_one_car/train")
+    eval_dataset = HdfDataset("../data/dataset_one_car/eval")
+
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCHSIZE, shuffle=True,
+                                               collate_fn=custom_collate_fn, num_workers=NUM_WORKERS)
+    eval_loader = torch.utils.data.DataLoader(eval_dataset, batch_size=BATCHSIZE, shuffle=False,
+                                              collate_fn=custom_collate_fn, num_workers=NUM_WORKERS)
 
     print('==>>> total training batch number: {}'.format(len(train_loader)))
     print('==>>> total testing batch number: {}'.format(len(eval_loader)))

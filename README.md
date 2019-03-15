@@ -20,9 +20,13 @@ are used as channel informations.
 The convolution layers are structured in modules similar to Inception Layers, just a bit smaller
 to be more friendly to GPUs with smaller VRAM.
 
+Thanks to tensorboardX progress during training can be monitored with 
+```
+tensorboard --logdir summaries
+```
+
+
 Things to come:
-+ Visualization of the actual output of the neural net
-+ More metriks for output quality
 + Colab implementation for cloud training
 + Use of sparse convolution for better performance
 + Experiments with different layer structures / parameters 

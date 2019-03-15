@@ -1,5 +1,5 @@
 from time import time
-
+import os
 import torch
 import torch.nn as nn
 from torch.nn.functional import relu
@@ -49,9 +49,12 @@ def custom_collate_fn(sample):
 EPOCHS = 20
 BATCHSIZE = 10
 NUM_WORKERS = 3
+MODEL_FILE = "../net_weights/0000.pt"
 if __name__ == '__main__':
     t1 = time()
     net = PointCloudMapRegressionNet()
+    if os.path.isfile(MODEL_FILE):
+        net.load_state_dict(torch.load(MODEL_FILE))
     net = net.cuda()
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()
@@ -86,6 +89,7 @@ if __name__ == '__main__':
 
     # evaluation loop
     loss = 0
+    samples = 0
     for i, (input, labels) in enumerate(eval_loader):
         if i % 10 == 0:
             print(i)
@@ -95,9 +99,15 @@ if __name__ == '__main__':
         output = net(input)
         # mask = labels != 0
         # mask = mask.any(1)
-        loss += float(loss_function(output, labels))
+        # mask = mask.unsqueeze(1)
+        # mask = torch.cat([mask, mask, mask], 1)
+        # average_error_distance=((output[mask] - labels[mask])**2).sum().sqrt()
+        predictions = ((output - labels) ** 2).sum(1).sqrt()
+        loss += float(predictions.sum())
+        # loss += float(loss_function(output, labels))
+        samples += len(predictions)
     t3 = time()
     print("Elapsed evalutation time: {}".format(t3 - t2))
-    print("Average loss is: ", loss / i)
+    print("Average loss is: ", loss / samples)
 
-# torch.save(model.state_dict(), model.name())
+    torch.save(net.state_dict(), MODEL_FILE)

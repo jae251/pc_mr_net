@@ -7,6 +7,7 @@ from torch.optim import Adam
 
 from data.hdf_dataset_loader import HdfDataset
 from layers.convolution_module import FirstLayer, ConvolutionModule
+from utilities.metrics import Metrics
 
 
 class PointCloudMapRegressionNet(nn.Module):
@@ -49,15 +50,18 @@ def custom_collate_fn(sample):
 EPOCHS = 20
 BATCHSIZE = 10
 NUM_WORKERS = 3
-MODEL_FILE = "../net_weights/0000.pt"
+LOAD_MODEL = "../net_weights/0002.pt"
+SAVE_MODEL = "../net_weights/0003.pt"
 if __name__ == '__main__':
     t1 = time()
     net = PointCloudMapRegressionNet()
-    if os.path.isfile(MODEL_FILE):
-        net.load_state_dict(torch.load(MODEL_FILE))
+    if os.path.isfile(LOAD_MODEL):
+        print("Loaded parameters from ", LOAD_MODEL)
+        net.load_state_dict(torch.load(LOAD_MODEL))
     net = net.cuda()
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()
+    tensorboard_metrics = Metrics(log_dir="../summaries")
 
     train_dataset = HdfDataset("../data/dataset_one_car/train")
     eval_dataset = HdfDataset("../data/dataset_one_car/eval")
@@ -84,6 +88,7 @@ if __name__ == '__main__':
             loss = loss_function(output, labels)
             loss.backward()
             optimizer.step()
+            tensorboard_metrics.create_summary(loss, output, labels, i)
     t2 = time()
     print("Elapsed training time: {}".format(t2 - t1))
 
@@ -97,17 +102,15 @@ if __name__ == '__main__':
         labels = labels.cuda()
 
         output = net(input)
-        # mask = labels != 0
-        # mask = mask.any(1)
-        # mask = mask.unsqueeze(1)
-        # mask = torch.cat([mask, mask, mask], 1)
-        # average_error_distance=((output[mask] - labels[mask])**2).sum().sqrt()
-        predictions = ((output - labels) ** 2).sum(1).sqrt()
-        loss += float(predictions.sum())
-        # loss += float(loss_function(output, labels))
-        samples += len(predictions)
+        mask = labels != 0
+        mask = mask.any(1)
+        average_error_distance = ((output - labels) ** 2).sum(1).sqrt()
+        average_error_distance = average_error_distance[mask]
+        samples += len(average_error_distance)
+        loss += float(average_error_distance.sum())
     t3 = time()
     print("Elapsed evalutation time: {}".format(t3 - t2))
     print("Average loss is: ", loss / samples)
 
-    torch.save(net.state_dict(), MODEL_FILE)
+    torch.save(net.state_dict(), SAVE_MODEL)
+    print("Saved model in ", SAVE_MODEL)

@@ -47,14 +47,18 @@ def custom_collate_fn(sample):
     return input, label
 
 
-EPOCHS = 20
+EPOCHS = 200
 BATCHSIZE = 10
 NUM_WORKERS = 3
-LOAD_MODEL = "../net_weights/0002.pt"
-SAVE_MODEL = "../net_weights/0003.pt"
+MODEL_DIR = "../net_weights"
 if __name__ == '__main__':
     t1 = time()
     net = PointCloudMapRegressionNet()
+
+    nr_saved_models = len(os.listdir(MODEL_DIR))
+    LOAD_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
+    SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models + 1))
+
     if os.path.isfile(LOAD_MODEL):
         print("Loaded parameters from ", LOAD_MODEL)
         net.load_state_dict(torch.load(LOAD_MODEL))
@@ -71,15 +75,14 @@ if __name__ == '__main__':
     eval_loader = torch.utils.data.DataLoader(eval_dataset, batch_size=BATCHSIZE, shuffle=False,
                                               collate_fn=custom_collate_fn, num_workers=NUM_WORKERS)
 
-    print('==>>> total training batch number: {}'.format(len(train_loader)))
+    nr_training_samples = len(train_loader)
+    print('==>>> total training batch number: {}'.format(nr_training_samples))
     print('==>>> total testing batch number: {}'.format(len(eval_loader)))
 
     # training loop
     for epoch in range(EPOCHS):
         print("EPOCH ", epoch)
         for i, (input, labels) in enumerate(train_loader):
-            if i % 10 == 0:
-                print(i)
             optimizer.zero_grad()
             input = input.cuda()
             labels = labels.cuda()
@@ -88,7 +91,13 @@ if __name__ == '__main__':
             loss = loss_function(output, labels)
             loss.backward()
             optimizer.step()
-            tensorboard_metrics.create_summary(loss, output, labels, i)
+            if i % 10 == 0:
+                print(i)
+                tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * epoch + i)
+        if epoch % 10 == 0:
+            torch.save(net.state_dict(), SAVE_MODEL)
+            print("Saved model in ", SAVE_MODEL)
+            SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(len(MODEL_DIR) + 1))
     t2 = time()
     print("Elapsed training time: {}".format(t2 - t1))
 

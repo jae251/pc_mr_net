@@ -27,6 +27,5 @@ tensorboard --logdir summaries
 
 
 Things to come:
-+ Colab implementation for cloud training
 + Use of sparse convolution for better performance
 + Experiments with different layer structures / parameters 

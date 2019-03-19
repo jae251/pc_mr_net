@@ -92,8 +92,9 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
             if i % 10 == 0:
-                print(i)
+                print("{}\r".format(i))
                 tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * epoch + i)
+        print("")
         if epoch % 10 == 0:
             torch.save(net.state_dict(), SAVE_MODEL)
             print("Saved model in ", SAVE_MODEL)
@@ -106,7 +107,7 @@ if __name__ == '__main__':
     samples = 0
     for i, (input, labels) in enumerate(eval_loader):
         if i % 10 == 0:
-            print(i)
+            print("{}\r".format(i))
         input = input.cuda()
         labels = labels.cuda()
 
@@ -118,6 +119,7 @@ if __name__ == '__main__':
         samples += len(average_error_distance)
         loss += float(average_error_distance.sum())
     t3 = time()
+    print("")
     print("Elapsed evalutation time: {}".format(t3 - t2))
     print("Average loss is: ", loss / samples)
 

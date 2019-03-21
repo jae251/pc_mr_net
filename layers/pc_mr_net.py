@@ -17,13 +17,19 @@ class PointCloudMapRegressionNet(nn.Module):
         self.conv2 = ConvolutionModule(40, 20)
         self.conv2 = ConvolutionModule(40, 20)
         self.conv3 = ConvolutionModule(40, 20)
-        self.conv4 = nn.Conv2d(40, 3, 1)
+        self.conv4 = ConvolutionModule(40, 20)
+        self.conv5 = ConvolutionModule(40, 20)
+        self.conv6 = ConvolutionModule(40, 20)
+        self.regression = nn.Conv2d(40, 3, 1)
 
     def forward(self, x):
         x = relu(self.conv1(x))
         x = relu(self.conv2(x))
         x = relu(self.conv3(x))
-        x = self.conv4(x)
+        x = relu(self.conv4(x))
+        x = relu(self.conv5(x))
+        x = relu(self.conv6(x))
+        x = self.regression(x)
         return x
 
 

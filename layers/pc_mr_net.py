@@ -53,17 +53,19 @@ def custom_collate_fn(sample):
     return input, label
 
 
-EPOCHS = 200
+EPOCHS = 1000
 BATCHSIZE = 10
 NUM_WORKERS = 3
-MODEL_DIR = "../net_weights"
+# MODEL_DIR = "../net_weights"
+MODEL_DIR = "/content/drive/My Drive/net_weights"
 if __name__ == '__main__':
     t1 = time()
     net = PointCloudMapRegressionNet()
 
     nr_saved_models = len(os.listdir(MODEL_DIR))
     LOAD_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
-    SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models + 1))
+    nr_saved_models += 1
+    SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
 
     if os.path.isfile(LOAD_MODEL):
         print("Loaded parameters from ", LOAD_MODEL)
@@ -71,10 +73,11 @@ if __name__ == '__main__':
     net = net.cuda()
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()
-    tensorboard_metrics = Metrics(log_dir="../summaries")
+    # tensorboard_metrics = Metrics(log_dir="../summaries")
+    tensorboard_metrics = Metrics(log_dir="/content/drive/My Drive/summaries")
 
-    train_dataset = HdfDataset("../data/dataset_one_car/train")
-    eval_dataset = HdfDataset("../data/dataset_one_car/eval")
+    train_dataset = HdfDataset("../../data/dataset_one_car/train")
+    eval_dataset = HdfDataset("../../data/dataset_one_car/eval")
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCHSIZE, shuffle=True,
                                                collate_fn=custom_collate_fn, num_workers=NUM_WORKERS)
@@ -104,7 +107,8 @@ if __name__ == '__main__':
         if epoch % 10 == 0:
             torch.save(net.state_dict(), SAVE_MODEL)
             print("Saved model in ", SAVE_MODEL)
-            SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(len(MODEL_DIR) + 1))
+            nr_saved_models += 1
+            SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
     t2 = time()
     print("Elapsed training time: {}".format(t2 - t1))
 

@@ -1,8 +1,11 @@
+import os
 from tensorboardX import SummaryWriter
 
 
 class Metrics:
     def __init__(self, log_dir=None):  # , metrics=[]):
+        if not os.path.isdir(log_dir):
+            os.mkdir(log_dir)
         self.writer = SummaryWriter(log_dir=log_dir)
 
     def create_summary(self, loss, output, labels, n):

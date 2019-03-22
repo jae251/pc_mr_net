@@ -101,7 +101,7 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
             if i % 10 == 0:
-                print("{}\r".format(i))
+                print("{}\r".format(i), end="")
                 tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * epoch + i)
         print("")
         if epoch % 10 == 0:
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     samples = 0
     for i, (input, labels) in enumerate(eval_loader):
         if i % 10 == 0:
-            print("{}\r".format(i))
+            print("{}\r".format(i), end="")
         input = input.cuda()
         labels = labels.cuda()
 

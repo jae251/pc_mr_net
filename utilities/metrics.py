@@ -24,6 +24,9 @@ class Metrics:
         self.writer.add_scalar("Accuracy inside 0.1m Diameter", float((error_distance < .05).sum()) * inv_samples, n)
         self.writer.add_histogram("Error Distance Histogram", error_distance, n)
 
+    def close(self):
+        self.writer.close()
+
 
 if __name__ == '__main__':
     metrics = Metrics()

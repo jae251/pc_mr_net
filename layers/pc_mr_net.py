@@ -1,5 +1,6 @@
 from time import time
 import os
+import shutil
 import torch
 import torch.nn as nn
 from torch.nn.functional import relu
@@ -73,8 +74,8 @@ if __name__ == '__main__':
     net = net.cuda()
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()
-    # tensorboard_metrics = Metrics(log_dir="../summaries")
-    tensorboard_metrics = Metrics(log_dir="/content/drive/My Drive/summaries")
+    tensorboard_metrics = Metrics(log_dir="../summaries")
+    # tensorboard_metrics = Metrics(log_dir="/content/drive/My Drive/summaries")
 
     train_dataset = HdfDataset("../../data/dataset_one_car/train")
     eval_dataset = HdfDataset("../../data/dataset_one_car/eval")
@@ -109,6 +110,11 @@ if __name__ == '__main__':
             print("Saved model in ", SAVE_MODEL)
             nr_saved_models += 1
             SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
+            tensorboard_metrics.close()
+            summary_file = os.listdir("../summaries")[0]
+            shutil.move(os.path.join("../summaries", summary_file),
+                        os.path.join("/content/drive/My Drive/summaries", summary_file))
+            tensorboard_metrics = Metrics(log_dir="../summaries")
     t2 = time()
     print("Elapsed training time: {}".format(t2 - t1))
 

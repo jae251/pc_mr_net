@@ -4,7 +4,7 @@ import os
 import numpy as np
 from h5py import File
 
-from layers.pc_mr_net import PointCloudMapRegressionNet
+from scripts.train import PointCloudMapRegressionNet
 from data.hdf_dataset_loader import HdfDataset
 
 

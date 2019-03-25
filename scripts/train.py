@@ -8,7 +8,7 @@ from torch.optim import Adam
 
 from data.hdf_dataset_loader import HdfDataset
 from layers.convolution_module import FirstLayer, ConvolutionModule
-from utilities.metrics import Metrics
+from utilities.metrics import TrainingMetrics
 
 
 class PointCloudMapRegressionNet(nn.Module):
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     net = net.cuda()
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()
-    tensorboard_metrics = Metrics(log_dir="../summaries")
+    tensorboard_metrics = TrainingMetrics(log_dir="../summaries")
     # tensorboard_metrics = Metrics(log_dir="/content/drive/My Drive/summaries")
 
     train_dataset = HdfDataset("../../data/dataset_one_car/train")
@@ -114,7 +114,7 @@ if __name__ == '__main__':
             summary_file = os.listdir("../summaries")[0]
             shutil.move(os.path.join("../summaries", summary_file),
                         os.path.join("/content/drive/My Drive/summaries", summary_file))
-            tensorboard_metrics = Metrics(log_dir="../summaries")
+            tensorboard_metrics = TrainingMetrics(log_dir="../summaries")
     t2 = time()
     print("Elapsed training time: {}".format(t2 - t1))
 

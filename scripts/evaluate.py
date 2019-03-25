@@ -45,7 +45,7 @@ if __name__ == '__main__':
     for i, weight_file in enumerate(sorted(os.listdir(args.net_weights_folder))):  # "../net_weights"))):
         print("\rEvaluating ", weight_file)
         net = PointCloudMapRegressionNet()
-        net.load_state_dict(torch.load("../net_weights/" + weight_file))
+        net.load_state_dict(torch.load(os.path.join(args.net_weights_folder, weight_file)))
         net = net.cuda()
 
         eval_dataset = HdfDataset("../data/dataset_one_car/eval")

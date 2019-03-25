@@ -42,7 +42,7 @@ if __name__ == '__main__':
     tensorboard_metrics = EvaluationMetrics(log_dir="../eval_summaries")
     loss_function = nn.MSELoss()
     print("")
-    for i, weight_file in enumerate(sorted(os.listdir(args.net_weights_folder))):  # "../net_weights"))):
+    for n, weight_file in enumerate(sorted(os.listdir(args.net_weights_folder))):  # "../net_weights"))):
         print("\rEvaluating ", weight_file)
         net = PointCloudMapRegressionNet()
         net.load_state_dict(torch.load(os.path.join(args.net_weights_folder, weight_file)))
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             # samples += len(average_error_distance)
             # loss += float(average_error_distance.sum())
             tensorboard_metrics.add_batch(loss, output, labels)
-        tensorboard_metrics.create_summary(i)
+        tensorboard_metrics.create_summary(n)
         # print("Average loss is: ", loss / samples)
     t2 = time()
     print("Elapsed evalutation time: {}".format(t2 - t1))

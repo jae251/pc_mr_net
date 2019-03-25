@@ -68,6 +68,8 @@ class EvaluationMetrics:
         self.writer.add_scalar("Accuracy inside 1m Diameter", reduced_metrics[3], n)
         self.writer.add_scalar("Accuracy inside 0.1m Diameter", reduced_metrics[4], n)
         self.writer.add_histogram("Error Distance Histogram", error_distances, n)
+        self.batches = []
+        self.error_distances = []
 
     def close(self):
         self.writer.close()

@@ -3,6 +3,7 @@ import torch.nn as nn
 import os
 import numpy as np
 from time import time
+from argparse import ArgumentParser
 
 from scripts.train import PointCloudMapRegressionNet
 from data.hdf_dataset_loader import HdfDataset
@@ -34,10 +35,14 @@ NUM_WORKERS = 3
 
 if __name__ == '__main__':
     t1 = time()
+    parser = ArgumentParser()
+    parser.add_argument("net_weights_folder")
+    args = parser.parse_args()
+
     tensorboard_metrics = EvaluationMetrics(log_dir="../eval_summaries")
     loss_function = nn.MSELoss()
     print("")
-    for i, weight_file in enumerate(sorted(os.listdir("../net_weights"))):
+    for i, weight_file in enumerate(sorted(os.listdir(args.net_weights_folder))):  # "../net_weights"))):
         print("\rEvaluating ", weight_file)
         net = PointCloudMapRegressionNet()
         net.load_state_dict(torch.load("../net_weights/" + weight_file))

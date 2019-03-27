@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     # training loop
     for epoch in range(EPOCHS):
-        print("EPOCH ", epoch)
+        print("\nEPOCH ", epoch)
         for i, (input, labels) in enumerate(train_loader):
             optimizer.zero_grad()
             input = input.cuda()
@@ -94,7 +94,6 @@ if __name__ == '__main__':
             if i % 10 == 0:
                 print("\r{}".format(i), end="")
                 tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * epoch + i)
-        print("")
         if epoch % 10 == 0:
             torch.save(net.state_dict(), SAVE_MODEL)
             print("Saved model in ", SAVE_MODEL)

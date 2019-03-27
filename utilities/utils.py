@@ -5,3 +5,11 @@ def adapt_z_position(bbox):
     position[:, 2] = height * .5
     bbox["position"] = position
     return bbox
+
+
+def on_colab():
+    try:
+        import google.colab
+        return True
+    except:
+        return False

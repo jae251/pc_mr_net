@@ -45,6 +45,13 @@ if __name__ == '__main__':
     else:
         MODEL_DIR = "net_weights"
         NUM_WORKERS = 3
+    if not os.path.isdir(MODEL_DIR):
+        os.mkdir(MODEL_DIR)
+    if not os.path.isdir(MODEL_DIR):
+        os.mkdir(MODEL_DIR)
+    SUMMARY_DIR = "summaries"
+    if not os.path.isdir(SUMMARY_DIR):
+        os.mkdir(SUMMARY_DIR)
 
     nr_saved_models = len(os.listdir(MODEL_DIR))
     LOAD_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))

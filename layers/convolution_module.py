@@ -18,10 +18,10 @@ class ConvolutionModule(nn.Module):
 
 
 class FirstLayer(nn.Module):
-    def __init__(self):
+    def __init__(self, output_channels=20):
         super().__init__()
-        self.conv3x3 = PointConvolution(3, 20)
-        self.conv5x5 = PointConvolution(5, 20)
+        self.conv3x3 = PointConvolution(3, output_channels)
+        self.conv5x5 = PointConvolution(5, output_channels)
 
     def forward(self, x):
         x0 = nn.functional.relu(self.conv3x3(x))

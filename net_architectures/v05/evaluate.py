@@ -7,6 +7,7 @@ from time import time
 from net_def import PointCloudMapRegressionNet
 from data.hdf_dataset_loader import HdfDataset
 from utilities.metrics import EvaluationMetrics
+from utilities.utils import on_colab
 
 
 def custom_collate_fn(sample):
@@ -34,13 +35,20 @@ NUM_WORKERS = 3
 
 if __name__ == '__main__':
     t1 = time()
-    tensorboard_metrics = EvaluationMetrics(log_dir="eval_summaries")
     loss_function = nn.MSELoss()
+    if on_colab():
+        WEIGHT_DIR = "/content/drive/My Drive/net_weights"
+        EVAL_DIR = "/content/drive/My Drive/eval_summaries"
+    else:
+        WEIGHT_DIR = "net_weights"
+        EVAL_DIR = "eval_summaries"
+    tensorboard_metrics = EvaluationMetrics(log_dir=EVAL_DIR)
+
     print("")
-    for n, weight_file in enumerate(sorted(os.listdir("net_weights"))):
+    for n, weight_file in enumerate(sorted(os.listdir(WEIGHT_DIR))):
         print("\rEvaluating ", weight_file)
         net = PointCloudMapRegressionNet()
-        net.load_state_dict(torch.load(os.path.join("net_weights", weight_file)))
+        net.load_state_dict(torch.load(os.path.join(WEIGHT_DIR, weight_file)))
         net = net.cuda()
 
         eval_dataset = HdfDataset("../../data/dataset_one_car/eval")

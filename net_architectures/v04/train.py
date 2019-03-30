@@ -41,7 +41,8 @@ if __name__ == '__main__':
     on_colab = on_colab()
     if on_colab:
         MODEL_DIR = "/content/drive/My Drive/net_weights"
-        NUM_WORKERS = 1
+        from multiprocessing import cpu_count
+        NUM_WORKERS = cpu_count()
     else:
         MODEL_DIR = "net_weights"
         NUM_WORKERS = 3
@@ -81,7 +82,7 @@ if __name__ == '__main__':
 
     # training loop
     for epoch in range(EPOCHS):
-        print("\nEPOCH ", epoch)
+        print("\rEPOCH ", epoch)
         for i, (input, labels) in enumerate(train_loader):
             optimizer.zero_grad()
             input = input.cuda()
@@ -96,7 +97,7 @@ if __name__ == '__main__':
                 tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * epoch + i)
         if epoch % 10 == 0:
             torch.save(net.state_dict(), SAVE_MODEL)
-            print("Saved model in ", SAVE_MODEL)
+            print("\rSaved model in ", SAVE_MODEL)
             nr_saved_models += 1
             SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
             if on_colab:

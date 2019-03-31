@@ -42,6 +42,7 @@ if __name__ == '__main__':
     if on_colab:
         MODEL_DIR = "/content/drive/My Drive/net_weights"
         from multiprocessing import cpu_count
+
         NUM_WORKERS = cpu_count()
     else:
         MODEL_DIR = "net_weights"
@@ -62,6 +63,7 @@ if __name__ == '__main__':
     if os.path.isfile(LOAD_MODEL):
         print("Loaded parameters from ", LOAD_MODEL)
         net.load_state_dict(torch.load(LOAD_MODEL))
+        ep_done = nr_saved_models * 10
     net = net.cuda()
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()
@@ -94,7 +96,7 @@ if __name__ == '__main__':
             optimizer.step()
             if i % 10 == 0:
                 print("\r{}".format(i), end="")
-                tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * epoch + i)
+                tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * (epoch + ep_done) + i)
         if epoch % 10 == 0:
             torch.save(net.state_dict(), SAVE_MODEL)
             print("\rSaved model in ", SAVE_MODEL)

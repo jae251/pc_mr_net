@@ -97,7 +97,7 @@ if __name__ == '__main__':
             if i % 10 == 0:
                 print("\r{}".format(i), end="")
                 tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * (epoch + ep_done) + i)
-        if epoch % 10 == 0:
+        if epoch % 2 == 0:
             torch.save(net.state_dict(), SAVE_MODEL)
             print("\rSaved model in ", SAVE_MODEL)
             nr_saved_models += 1

@@ -99,17 +99,17 @@ if __name__ == '__main__':
             if i % 10 == 0:
                 print("\r{}".format(i), end="")
                 tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * (epoch + ep_done) + i)
-        if epoch % 10 == 0:
-            torch.save(net.state_dict(), SAVE_MODEL)
-            print("\rSaved model in ", SAVE_MODEL)
-            nr_saved_models += 1
-            SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
-            if on_colab:
-                tensorboard_metrics.close()
-                summary_file = os.listdir("summaries")[0]
-                shutil.move(os.path.join("summaries", summary_file),
-                            os.path.join("/content/drive/My Drive/summaries", summary_file))
-                tensorboard_metrics = TrainingMetrics(log_dir="summaries")
+        # if epoch % 10 == 0:
+        torch.save(net.state_dict(), SAVE_MODEL)
+        print("\rSaved model in ", SAVE_MODEL)
+        nr_saved_models += 1
+        SAVE_MODEL = os.path.join(MODEL_DIR, "{:04}.pt".format(nr_saved_models))
+        if on_colab:
+            tensorboard_metrics.close()
+            summary_file = os.listdir("summaries")[0]
+            shutil.move(os.path.join("summaries", summary_file),
+                        os.path.join("/content/drive/My Drive/summaries", summary_file))
+            tensorboard_metrics = TrainingMetrics(log_dir="summaries")
     t2 = time()
     print("Elapsed training time: {}".format(t2 - t1))
 

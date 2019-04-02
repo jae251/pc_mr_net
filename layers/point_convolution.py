@@ -40,6 +40,7 @@ class PointConvolution(nn.Module):
         coordinates = coordinates[np.any(coordinates != self._padding_size, axis=1)]
         return coordinates
 
+
 class PointConvolutionZeroed(nn.Module):
     '''
     Graph convolution over points with relative position as features
@@ -61,7 +62,7 @@ class PointConvolutionZeroed(nn.Module):
     def forward(self, x):
         _, _, shape_0, shape_1 = x.shape
         x_padded = self.pad(x)
-        mask = x_padded != 0
+        mask = (x_padded != 0).float()
         channels = []
         for i, j in self.kernel_coordinates:
             # calc each relative coord for each point selected by kernel

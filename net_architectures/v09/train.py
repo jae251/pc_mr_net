@@ -32,7 +32,7 @@ def custom_collate_fn(sample):
 
 
 EPOCHS = 1000
-BATCHSIZE = 2
+BATCHSIZE = 10
 
 if __name__ == '__main__':
     t1 = time()

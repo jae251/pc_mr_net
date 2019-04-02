@@ -32,7 +32,7 @@ def custom_collate_fn(sample):
 
 
 EPOCHS = 1000
-BATCHSIZE = 10
+BATCHSIZE = 2
 
 if __name__ == '__main__':
     t1 = time()
@@ -63,7 +63,9 @@ if __name__ == '__main__':
     if os.path.isfile(LOAD_MODEL):
         print("Loaded parameters from ", LOAD_MODEL)
         net.load_state_dict(torch.load(LOAD_MODEL))
-        ep_done = (nr_saved_models - 1) * 10 # -1 due to saving of initial parameter conditions
+        ep_done = (nr_saved_models - 1) * 10  # -1 due to saving of initial parameter conditions
+    else:
+        ep_done = 0
     net = net.cuda()
     optimizer = Adam(net.parameters())
     loss_function = nn.MSELoss()

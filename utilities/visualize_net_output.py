@@ -24,6 +24,7 @@ class Visualizer:
 
     def publish(self, bboxes=None, pcloud=None, pcloud_color=None, object_vectors=None, object_vector_colors=None):
         if pcloud is not None:
+            pcloud = pcloud.astype(np.float32)
             pc = PointCloud2()
             pc.header = std_msgs.msg.Header()
             pc.header.frame_id = self.frame_id
@@ -39,7 +40,10 @@ class Visualizer:
             pc.is_bigendian = False
             pc.point_step = 16
             pc.row_step = 16 * l
-            pcl_data = np.hstack((pcloud[:, :3], pcloud_color.reshape(-1, 1)))
+            if pcloud_color is None:
+                pcl_data = np.hstack((pcloud[:, :3], np.ones((len(pcloud), 1), dtype=np.float32)))
+            else:
+                pcl_data = np.hstack((pcloud[:, :3], pcloud_color.reshape(-1, 1)))
             pc.data = pcl_data.tostring()
             self.pc_pub.publish(pc)
 
@@ -96,4 +100,5 @@ class DummyArray:
 
 if __name__ == '__main__':
     vis = Visualizer()
-    vis.publish(object_vectors=np.random.uniform(-1, 1, (10, 6)))
+    vis.publish(pcloud=np.random.uniform(-1, 1, (10, 3)).astype(np.float32),
+                object_vectors=np.random.uniform(-1, 1, (10, 3)))

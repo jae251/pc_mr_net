@@ -59,3 +59,32 @@ class HdfDataset(Dataset):
         label_vector = label_vector.float()
         label_vector.unsqueeze_(0)
         return label_vector
+
+    def get_data_raw(self, item):
+        _file = os.path.join(self.dataset_folder, self.data_files[item])
+        with File(_file) as f:
+            pcl_data = np.array(f["point_cloud"])
+            bounding_box_data = np.array(f["bounding_boxes"])
+        bounding_boxes = []
+        for bbx in bounding_box_data:
+            bounding_boxes.append(BoundingBox.from_numpy(bbx))
+        return pcl_data, bounding_boxes
+
+
+if __name__ == '__main__':
+    data_loader = HdfDataset("dataset_one_car/eval")
+    idx = np.random.randint(0, len(data_loader))
+    feature_vector, label_vector = data_loader[idx]
+    pcl, bounding_boxes = data_loader.get_data_raw(idx)
+    pos = bounding_boxes[0].pos
+    pcl = pcl.reshape(-1, 3)
+    m = np.any(pcl != 0, axis=1)
+
+    print(pos)
+    print(pcl.shape)
+    print(feature_vector.shape)
+    print(label_vector.shape)
+
+    # print(np.linalg.norm(label_vector[0].numpy().reshape(3,-1),axis=0).max())
+    print(np.linalg.norm(label_vector[0].numpy()., axis=1).max())
+    print(np.linalg.norm(pcl[m] - pos, axis=1).max())

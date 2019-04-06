@@ -52,8 +52,8 @@ class BoundingBox:
                                                       ("angle", np.float64)]))
 
     def check_points_inside(self, pcl):
-        linear_combination = np.linalg.solve(self.support_vector_matrix, pcl.transpose())
-        inside_box = np.all(linear_combination <= 1, axis=0)
+        linear_combination = np.linalg.solve(self.support_vector_matrix, (pcl - self.pos).transpose())
+        inside_box = np.all(linear_combination <= 1, axis=0) * np.all(linear_combination >= -1, axis=0)
         return inside_box
 
     def tf_into_bbox_cs(self, pcl):
@@ -87,8 +87,8 @@ class BoundingBox:
     def get_corner_points_2d(self):
         corner_points = self.pos + np.vstack(((self.l + self.b),
                                               (self.l - self.b),
-                                              (-self.l + self.b),
-                                              (-self.l - self.b)))
+                                              (-self.l - self.b),
+                                              (-self.l + self.b)))
 
         return corner_points
 

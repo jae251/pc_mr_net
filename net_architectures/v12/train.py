@@ -85,6 +85,7 @@ if __name__ == '__main__':
     print('==>>> total testing batch number: {}'.format(len(eval_loader)))
 
     # training loop
+    metric_periodicity = 10
     for epoch in range(EPOCHS):
         print("\rEPOCH ", epoch)
         for i, (input, labels) in enumerate(train_loader):
@@ -96,9 +97,10 @@ if __name__ == '__main__':
             loss = loss_function(output, labels)
             loss.backward()
             optimizer.step()
-            if i % 10 == 0:
+            if i % metric_periodicity == 0:
                 print("\r{}".format(i), end="")
-                tensorboard_metrics.create_summary(loss, output, labels, nr_training_samples * (epoch + ep_done) + i)
+                iteration = (nr_training_samples * (epoch + ep_done) + i) / metric_periodicity
+                tensorboard_metrics.create_summary(loss, output, labels, iteration)
         # if epoch % 10 == 0:
         torch.save(net.state_dict(), SAVE_MODEL)
         print("\rSaved model in ", SAVE_MODEL)

@@ -35,13 +35,14 @@ if __name__ == '__main__':
     net.load_state_dict(torch.load(model, map_location="cpu"))
 
     data_loader = InferenceDataset(DATA_DIR)
-    feature_vector, pcl_data, bounding_boxes, label_vector = data_loader[np.random.randint(0, len(data_loader))]
-    labels = np.rollaxis(label_vector.numpy()[0], 0, 2).reshape(-1, 3)
-    print(np.max(np.linalg.norm(labels, axis=1)))
-    quit()
-    output = np.rollaxis(net(feature_vector).data.numpy()[0], 0, 2).reshape(-1, 3)
+    feature_vector, pcl_data, bounding_boxes, label_vector = data_loader[0]  # np.random.randint(0, len(data_loader))]
+    labels = np.rollaxis(label_vector.numpy()[0], 0, 3).reshape(-1, 3)
+    output = np.rollaxis(net(feature_vector).data.numpy()[0], 0, 3).reshape(-1, 3)
+    print(np.linalg.norm(output - labels))
+    print(np.sum((output - labels) ** 2) * .5)
     vis = Visualizer()
-    mask = np.any(pcl_data != 0, axis=1) * np.any(labels != 0, axis=1)  # * np.any(output != 0, axis=1)
-    pcl = pcl_data[mask]
+    # mask = np.any(pcl_data != 0, axis=1) #* np.any(labels != 0, axis=1)  # * np.any(output != 0, axis=1)
+    # pcl = pcl_data[mask]
     # vis.publish(bboxes=bounding_boxes, pcloud=pcl, object_vectors=np.zeros_like(pcl) + bounding_boxes[0].pos)
-    vis.publish(bboxes=bounding_boxes, pcloud=pcl, object_vectors=output[mask])
+    vis.publish(bboxes=bounding_boxes, pcloud=pcl_data, object_vectors=pcl_data - output)
+    # vis.publish(bboxes=bounding_boxes, pcloud=pcl_data)

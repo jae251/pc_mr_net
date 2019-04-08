@@ -43,17 +43,17 @@ class HdfDataset(Dataset):
         shape = pcl.shape
         pcl_label = pcl_label.reshape(-1, 3)
         not_valid_ray_mask = np.all(pcl_label == 0, axis=1)
-        # changed = np.zeros(len(pcl_label))
+        changed = np.zeros(len(pcl_label))
         for bb in bbx:
             bb = BoundingBox.from_numpy(bb)
-            # mask = bb.check_points_inside(pcl_label)
+            mask = bb.check_points_inside(pcl_label)
             pcl_label -= bb.pos
-            # pcl_label[mask] -= bb.pos
-            # changed += mask
+            pcl_label[mask] -= bb.pos
+            changed += mask
         pcl_label[not_valid_ray_mask] = 0
-        # nr_of_points_changed_multiple_times = np.sum(changed > 1)
-        # if nr_of_points_changed_multiple_times > 0:
-        #     print("{} points were found in more than one bounding box.".format(nr_of_points_changed_multiple_times))
+        nr_of_points_changed_multiple_times = np.sum(changed > 1)
+        if nr_of_points_changed_multiple_times > 0:
+            print("{} points were found in more than one bounding box.".format(nr_of_points_changed_multiple_times))
         pcl_label = pcl_label.reshape(*shape)
         pcl_label = np.rollaxis(pcl_label, 2, 0)  # put x,y,z dimension as the channel dimension
         label_vector = torch.from_numpy(pcl_label)

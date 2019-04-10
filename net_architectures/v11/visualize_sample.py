@@ -3,7 +3,7 @@ import os
 import numpy as np
 from h5py import File
 
-from utilities.visualize_net_output import Visualizer
+from utilities.rviz_visualization import Visualizer
 from utilities.bounding_boxes import BoundingBox
 from net_def import PointCloudMapRegressionNet
 from data.hdf_dataset_loader import HdfDataset

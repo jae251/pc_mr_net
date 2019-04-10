@@ -15,7 +15,7 @@ class BoundingBox:
         self.support_vector_matrix = np.dstack((self.l, self.b, self.h))[0]
 
         self.color = (1, 1, 1)
-        self.frame_id = "root"
+        self.frame_id = "map"
 
     @classmethod
     def from_kitti_string(cls, id, kitti_string, tf_matrix=None):

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from bounding_boxes import BoundingBox
+from utilities.bounding_boxes import BoundingBox
 
 
 class KittiLoader:
@@ -47,12 +47,11 @@ class KittiLoader:
         return tf_matrix
 
     def __iter__(self):
-        self._order = np.random.shuffle(range(len(self.pcl_frames)))
+        self._order = np.random.shuffle(list(range(len(self.pcl_frames))))
         self.iteration = 0
         return self
 
-    # def __next__(self):
-    def next(self):
+    def __next__(self):
         try:
             pcl_data = self._read_pcl_file(self.training_data_path + "/" + self.pcl_frames[self.iteration])
             tf_matrix = self._read_calib_file(self.calib_path + "/" + self.calib_frames[self.iteration])
@@ -73,8 +72,10 @@ def add_marker(pcl, rgb, x, y):
 
 
 if __name__ == '__main__':
-    data_loader = KittiLoader("/cygdrive/c/Users/usr/Downloads/KITTI")
-    from tools.visualizer import Visualizer
+    # kitti_path = os.path.expanduser("~/Downloads/KITTI")
+    kitti_path = "/mnt/c/Users/usr/Downloads/KITTI"
+    data_loader = KittiLoader(kitti_path)
+    from utilities.rviz_visualization import Visualizer
     from time import sleep
 
     vis = Visualizer()

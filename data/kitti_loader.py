@@ -2,18 +2,18 @@ import os
 import numpy as np
 
 from utilities.bounding_boxes import BoundingBox
+from hdf_dataset_loader import HdfDataset
 
 
-class KittiLoader:
-    def __init__(self, kitti_path=os.path.expanduser("~/Downloads/KITTI")):
-        self.kitti_path = kitti_path
-        self.training_data_path = kitti_path + "/training/velodyne"
-        # self.testing_data_path = kitti_path + "/testing/velodyne"
-        self.training_label_path = kitti_path + "/training/label_2"
-        self.calib_path = kitti_path + "/training/calib"
-        self.pcl_frames = os.listdir(self.training_data_path)
-        self.label_frames = os.listdir(self.training_label_path)
-        self.calib_frames = os.listdir(self.calib_path)
+class KittiLoader(HdfDataset):
+    def __init__(self, dataset_folder=os.path.expanduser("~/Downloads/KITTI/training")):
+        self.kitti_path = dataset_folder
+        self.pcl_data_dir = os.path.join(dataset_folder, "velodyne")
+        self.label_data_dir = os.path.join(dataset_folder, "label_2")
+        self.calib_data_dir = os.path.join(dataset_folder, "calib")
+        self.pcl_frames = os.listdir(self.pcl_data_dir)
+        self.label_frames = os.listdir(self.label_data_dir)
+        self.calib_frames = os.listdir(self.calib_data_dir)
 
     @staticmethod
     def _read_pcl_file(file):
@@ -46,40 +46,36 @@ class KittiLoader:
         tf_matrix = np.linalg.inv(np.matmul(r0, trvtc).transpose())
         return tf_matrix
 
-    def __iter__(self):
-        self._order = np.random.shuffle(list(range(len(self.pcl_frames))))
-        self.iteration = 0
-        return self
+    def __len__(self):
+        return len(self.pcl_frames)
 
-    def __next__(self):
-        try:
-            pcl_data = self._read_pcl_file(self.training_data_path + "/" + self.pcl_frames[self.iteration])
-            tf_matrix = self._read_calib_file(self.calib_path + "/" + self.calib_frames[self.iteration])
-            label_data = self._read_label_file(self.training_label_path + "/" + self.label_frames[self.iteration],
-                                               tf_matrix)
-        except IndexError:
-            raise StopIteration
-        self.iteration += 1
-        return pcl_data, label_data
+    def __getitem__(self, item):
+        pcl_data = self._read_pcl_file(self.pcl_data_dir + "/" + self.pcl_frames[item])
+        pcl_data = self.reconstruct_picture_format(pcl_data)
+        tf_matrix = self._read_calib_file(self.calib_data_dir + "/" + self.calib_frames[item])
+        bounding_box_data = self._read_label_file(self.label_data_dir + "/" + self.label_frames[item], tf_matrix)
+        feature_vector = self.compute_feature_vector(pcl_data)
+        label_vector = self.compute_label_vector(pcl_data, bounding_box_data)
+        if self.transform:
+            feature_vector, label_vector = self.transform(feature_vector, label_vector)
+        return feature_vector, label_vector
 
+    def get_raw_data(self, item):
+        pcl_data = self._read_pcl_file(self.pcl_data_dir + "/" + self.pcl_frames[item])
+        tf_matrix = self._read_calib_file(self.calib_data_dir + "/" + self.calib_frames[item])
+        bounding_box_data = self._read_label_file(self.label_data_dir + "/" + self.label_frames[item], tf_matrix)
+        return pcl_data, bounding_box_data
 
-def add_marker(pcl, rgb, x, y):
-    debug_pole = np.hstack((np.repeat(np.array((x, y)).reshape(1, 2), 100, axis=0),
-                            np.linspace(-5, 5, 100).reshape(-1, 1)))
-    rgb = np.vstack((rgb, np.repeat(np.array((1, 0, 0)).reshape(1, 3), len(debug_pole), axis=0)))
-    pcl = np.vstack((pcl, debug_pole))
-    return pcl, rgb
+    def reconstruct_picture_format(self, pcl):
+        raise NotImplementedError
 
 
 if __name__ == '__main__':
-    # kitti_path = os.path.expanduser("~/Downloads/KITTI")
-    kitti_path = "/mnt/c/Users/usr/Downloads/KITTI"
+    kitti_path = "/mnt/c/Users/usr/Downloads/KITTI/training"
+    # kitti_path = os.path.expanduser("~/Downloads/KITTI/training")
     data_loader = KittiLoader(kitti_path)
     from utilities.rviz_visualization import Visualizer
-    from time import sleep
 
     vis = Visualizer()
-    for pcl, bboxes in data_loader:
-        vis.publish(pcloud=pcl, bboxes=bboxes)
-        print("Published!")
-        sleep(3)
+    pcl, bboxes = data_loader.get_raw_data(8)
+    vis.publish(pcloud=pcl, bboxes=bboxes)

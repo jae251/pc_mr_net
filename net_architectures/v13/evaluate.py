@@ -30,7 +30,7 @@ def custom_collate_fn(sample):
     return input, label
 
 
-BATCHSIZE = 2
+BATCHSIZE = 20
 NUM_WORKERS = 3
 
 if __name__ == '__main__':

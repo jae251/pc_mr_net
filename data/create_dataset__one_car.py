@@ -20,8 +20,8 @@ obj_file = os.path.expanduser("~/Downloads/3d models/Porsche_911_GT2.obj")
 # obj_file = "/mnt/sda2/Users/usr/Downloads/3d models/Porsche_911_GT2.obj"
 scene.add_model_to_shelf(*load_obj_file(obj_file), "Car")
 
-nr_of_scenes = 12000
-training_samples = 10000
+nr_of_scenes = 22000
+training_samples = 20000
 for scene_nr in range(nr_of_scenes):
     print(scene_nr)
     if scene_nr < training_samples:

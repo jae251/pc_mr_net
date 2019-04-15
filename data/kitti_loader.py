@@ -2,7 +2,10 @@ import os
 import numpy as np
 
 from utilities.bounding_boxes import BoundingBox
-from hdf_dataset_loader import HdfDataset
+try:
+    from hdf_dataset_loader import HdfDataset
+except ImportError:
+    from .hdf_dataset_loader import HdfDataset
 
 
 class KittiLoader(HdfDataset):

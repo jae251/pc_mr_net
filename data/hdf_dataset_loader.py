@@ -4,7 +4,10 @@ import os
 import torch
 from torch.utils.data import Dataset
 
-from utilities.bounding_boxes import BoundingBox
+try:
+    from utilities.bounding_boxes import BoundingBox
+except ImportError:
+    from ..utilities.bounding_boxes import BoundingBox
 
 
 class HdfDataset(Dataset):

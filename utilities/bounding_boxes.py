@@ -1,5 +1,9 @@
 import numpy as np
-from utilities.pcl_utils import rotate_pcl
+
+try:
+    from utilities.pcl_utils import rotate_pcl
+except ImportError:
+    from ..utilities.pcl_utils import rotate_pcl
 
 
 class BoundingBox:

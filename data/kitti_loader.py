@@ -1,7 +1,10 @@
 import os
 import numpy as np
 
-from utilities.bounding_boxes import BoundingBox
+try:
+    from utilities.bounding_boxes import BoundingBox
+except ImportError:
+    from ..utilities.bounding_boxes import BoundingBox
 try:
     from hdf_dataset_loader import HdfDataset
 except ImportError:
